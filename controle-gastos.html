@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle João Luís</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #2d3748; min-height: 100vh; }
+
+  .header {
+    background: linear-gradient(135deg, #2b6cb0, #4299e1);
+    color: white; padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header p { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #68d391; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .setup-card {
+    max-width: 540px; margin: 40px auto; background: white;
+    border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .setup-card h2 { font-size: 18px; margin-bottom: 8px; color: #2b6cb0; }
+  .setup-card p { font-size: 14px; color: #718096; margin-bottom: 24px; line-height: 1.6; }
+  .steps { counter-reset: step; margin-bottom: 24px; }
+  .step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; font-size: 14px; }
+  .step-num { background: #2b6cb0; color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: font-size:12px; justify-content: center; font-size: 12px; flex-shrink: 0; font-weight: 700; }
+  .step-text { padding-top: 3px; line-height: 1.5; }
+  .step-text a { color: #2b6cb0; font-weight: 600; }
+  .input-group { margin-bottom: 16px; }
+  .input-group label { display: block; font-size: 13px; font-weight: 600; color: #4a5568; margin-bottom: 6px; }
+  .input-group input { width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  .input-group input:focus { border-color: #4299e1; }
+  .btn { background: #2b6cb0; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s; }
+  .btn:hover { background: #2c5282; }
+  .btn:disabled { background: #a0aec0; cursor: not-allowed; }
+  .btn-secondary { background: #e2e8f0; color: #4a5568; margin-top: 10px; }
+  .btn-secondary:hover { background: #cbd5e0; }
+
+  .main { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
+
+  .saldo-card {
+    background: linear-gradient(135deg, #2b6cb0, #3182ce);
+    color: white; border-radius: 16px; padding: 24px; margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(43,108,176,0.3);
+  }
+  .saldo-label { font-size: 13px; opacity: 0.85; margin-bottom: 6px; }
+  .saldo-value { font-size: 36px; font-weight: 700; }
+  .saldo-meta { font-size: 13px; opacity: 0.75; margin-top: 8px; }
+
+  .form-card {
+    background: white; border-radius: 16px; padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px;
+  }
+  .form-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 18px; color: #2d3748; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: #718096; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field input, .field select { width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; background: white; }
+  .field input:focus, .field select:focus { border-color: #4299e1; }
+
+  .tipo-selector { display: flex; gap: 8px; margin-bottom: 18px; }
+  .tipo-btn { flex: 1; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; text-align: center; }
+  .tipo-btn.entrada.active { border-color: #48bb78; background: #f0fff4; color: #276749; }
+  .tipo-btn.saida.active { border-color: #fc8181; background: #fff5f5; color: #9b2c2c; }
+  .tipo-btn.diario.active { border-color: #ed8936; background: #fffaf0; color: #9c4221; }
+  .tipo-btn.nubank.active { border-color: #805ad5; background: #faf5ff; color: #553c9a; }
+  .tipo-btn.sicred.active { border-color: #38b2ac; background: #e6fffa; color: #234e52; }
+
+  .btn-registrar { background: #2b6cb0; color: white; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 16px; transition: background 0.2s; }
+  .btn-registrar:hover { background: #2c5282; }
+  .btn-registrar:disabled { background: #a0aec0; cursor: not-allowed; }
+
+  .recent-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .recent-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .entry { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f7fafc; }
+  .entry:last-child { border-bottom: none; }
+  .entry-info { font-size: 14px; }
+  .entry-desc { font-weight: 600; }
+  .entry-meta { font-size: 12px; color: #a0aec0; margin-top: 2px; }
+  .entry-val { font-size: 15px; font-weight: 700; }
+  .val-entrada { color: #48bb78; }
+  .val-saida { color: #fc8181; }
+  .val-diario { color: #ed8936; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2d3748; color: white; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .toast.success { background: #276749; }
+  .toast.error { background: #9b2c2c; }
+
+  .loading { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #718096; padding: 20px 0; justify-content: center; }
+  .spinner { width: 20px; height: 20px; border: 2px solid #e2e8f0; border-top-color: #4299e1; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .month-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .month-nav select { padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; background: white; }
+
+  .economia-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
+  .economia-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #2d3748; }
+  .eco-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .eco-tab { flex: 1; padding: 8px; border: 2px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer; font-size: 13px; font-weight: 700; text-align: center; transition: all 0.2s; }
+  .eco-tab.active { border-color: #48bb78; background: #f0fff4; color: #276749; }
+  .eco-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .eco-table th { text-align: left; padding: 8px 10px; font-size: 12px; font-weight: 700; color: #718096; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #e2e8f0; }
+  .eco-table td { padding: 10px 10px; border-bottom: 1px solid #f7fafc; vertical-align: middle; }
+  .eco-table tr:last-child td { border-bottom: none; font-weight: 700; background: #f7fafc; }
+  .eco-pct { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 20px; display: inline-block; }
+  .eco-pct.good { background: #f0fff4; color: #276749; }
+  .eco-pct.ok { background: #fffaf0; color: #9c4221; }
+  .eco-pct.bad { background: #fff5f5; color: #9b2c2c; }
+  .eco-input { width: 90px; padding: 6px 8px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 13px; outline: none; text-align: right; }
+  .eco-input:focus { border-color: #48bb78; }
+  .btn-eco-save { background: #48bb78; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 14px; width: 100%; transition: background 0.2s; }
+  .btn-eco-save:hover { background: #38a169; }
+  .btn-eco-save:disabled { background: #a0aec0; cursor: not-allowed; }
+
+  @media (max-width: 480px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .saldo-value { font-size: 28px; }
+    .tipo-selector { flex-wrap: wrap; }
+    .tipo-btn { flex: 1 1 45%; }
+    .eco-input { width: 70px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📊 Controle João Luís</h1>
+    <p>Termômetro de Gastos</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div id="conn-status" style="font-size:13px;opacity:0.9"></div>
+    <button onclick="desconectar()" id="btn-desconectar" style="display:none;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;">Trocar URL</button>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setup-screen" class="setup-card" style="display:none">
+  <h2>🔗 Conectar à Planilha</h2>
+  <p>Cole abaixo a URL do seu Google Apps Script para conectar diretamente à sua planilha.</p>
+  <div class="input-group">
+    <label>URL do Apps Script</label>
+    <input id="script-url-input" placeholder="https://script.google.com/macros/s/..." />
+  </div>
+  <button class="btn" onclick="conectar()">Conectar</button>
+  <button class="btn btn-secondary" onclick="usarDemo()">Usar modo demo (sem planilha)</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-screen" class="main" style="display:none">
+
+  <div class="saldo-card">
+    <div class="saldo-label" id="saldo-label">Saldo atual</div>
+    <div class="saldo-value" id="saldo-value">R$ —</div>
+    <div class="saldo-meta" id="saldo-meta">Carregando...</div>
+  </div>
+
+  <div class="form-card">
+    <h3>➕ Registrar Lançamento</h3>
+
+    <div class="tipo-selector">
+      <div class="tipo-btn entrada active" onclick="setTipo('entrada')">↑ Entrada</div>
+      <div class="tipo-btn saida" onclick="setTipo('saida')">↓ Saída</div>
+      <div class="tipo-btn diario" onclick="setTipo('diario')">📅 Diário</div>
+
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Data</label>
+        <input type="date" id="f-data" />
+      </div>
+      <div class="field">
+        <label>Valor (R$)</label>
+        <input type="number" id="f-valor" placeholder="0,00" step="0.01" min="0" />
+      </div>
+      <div class="field full" id="desc-field" style="display:none">
+        <label>Descrição</label>
+        <input type="text" id="f-desc" placeholder="Ex: mercado, academia..." />
+      </div>
+    </div>
+
+    <div id="mes-selector" class="field" style="margin-top:4px">
+      <label>Mês</label>
+      <select id="f-mes">
+        <option value="0">Janeiro</option><option value="1">Fevereiro</option>
+        <option value="2">Março</option><option value="3">Abril</option>
+        <option value="4">Maio</option><option value="5">Junho</option>
+        <option value="6">Julho</option><option value="7">Agosto</option>
+        <option value="8">Setembro</option><option value="9">Outubro</option>
+        <option value="10">Novembro</option><option value="11">Dezembro</option>
+      </select>
+    </div>
+
+    <button class="btn-registrar" id="btn-registrar" onclick="registrar()">Registrar na Planilha</button>
+  </div>
+
+  <div class="recent-card">
+    <h3>📋 Últimos Lançamentos</h3>
+    <div id="recent-list"><div class="loading"><div class="spinner"></div> Carregando...</div></div>
+  </div>
+
+  <div class="economia-card">
+    <h3>🐷 Economia</h3>
+    <div class="eco-tabs">
+      <div class="eco-tab active" onclick="setEcoAno('2025')">2025</div>
+      <div class="eco-tab" onclick="setEcoAno('2026')">2026</div>
+    </div>
+    <div id="eco-content"><div class="loading"><div class="spinner"></div> Carregando...</div></div>
+    <button class="btn-eco-save" id="btn-eco-save" onclick="salvarEconomia()">💾 Salvar Economia na Planilha</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let config = { scriptUrl: '', demo: false };
+let tipoAtual = 'entrada';
+
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+// Colunas da aba principal por mês (Data, Entrada, Saída, Diário, Saldo)
+const MES_COLS = [
+  ['A','B','C','D','E'],   // Jan
+  ['G','H','I','J','K'],   // Fev
+  ['M','N','O','P','Q'],   // Mar
+  ['S','T','U','V','W'],   // Abr
+  ['Y','Z','AA','AB','AC'],// Mai
+  ['AE','AF','AG','AH','AI'],// Jun
+  ['AK','AL','AM','AN','AO'],// Jul
+  ['AQ','AR','AS','AT','AU'],// Ago
+  ['AW','AX','AY','AZ','BA'],// Set
+  ['BC','BD','BE','BF','BG'],// Out
+  ['BI','BJ','BK','BL','BM'],// Nov
+  ['BO','BP','BQ','BR','BS'] // Dez
+];
+
+// Colunas do Nubank/Sicredi por mês (Data, Lançamento, Descrição, Fatura)
+const NUBANK_COLS = [
+  ['A','B','C','D'], ['F','G','H','I'], ['K','L','M','N'], ['P','Q','R','S'],
+  ['U','V','W','X'], ['Z','AA','AB','AC'], ['AE','AF','AG','AH'], ['AJ','AK','AL','AM'],
+  ['AO','AP','AQ','AR'], ['AT','AU','AV','AW'], ['AY','AZ','BA','BC'], ['BE','BF','BG','BH']
+];
+
+function desconectar() {
+  localStorage.removeItem('controle-config');
+  location.reload();
+}
+
+function init() {
+  const saved = localStorage.getItem('controle-config');
+  if (saved) {
+    config = JSON.parse(saved);
+    showApp();
+  } else {
+    document.getElementById('setup-screen').style.display = 'block';
+  }
+  // Set today's date
+  const today = new Date();
+  document.getElementById('f-data').value = today.toISOString().split('T')[0];
+  document.getElementById('f-mes').value = today.getMonth();
+}
+
+function conectar() {
+  const url = document.getElementById('script-url-input').value.trim();
+  if (!url) { showToast('Cole a URL do Apps Script', 'error'); return; }
+  config = { scriptUrl: url, demo: false };
+  localStorage.setItem('controle-config', JSON.stringify(config));
+  showApp();
+}
+
+function usarDemo() {
+  config = { sheetId: '', apiKey: '', demo: true };
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('btn-desconectar').style.display = 'block';
+  document.getElementById('conn-status').innerHTML = config.demo
+    ? '⚠️ Modo demo'
+    : '<span class="status-dot"></span>Conectado';
+  carregarDados();
+}
+
+function setTipo(tipo) {
+  tipoAtual = tipo;
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.tipo-btn.${tipo}`).classList.add('active');
+  // Mostrar campo descrição para Nubank e Sicredi
+  document.getElementById('desc-field').style.display = (tipo === 'nubank' || tipo === 'sicred') ? 'block' : 'none';
+}
+
+async function sheetsGet(range) {
+  if (config.demo) return null;
+  const parts = range.split('!');
+  const sheet = parts[0].replace(/'/g,'');
+  const r = await fetch(config.scriptUrl + '?sheet=' + encodeURIComponent(sheet) + '&range=' + encodeURIComponent(parts[1] || range));
+  if (!r.ok) throw new Error(await r.text());
+  const data = await r.json();
+  // normalize: Apps Script returns {values:[...]} 
+  return data;
+}
+
+async function sheetsUpdate(range, values) {
+  if (config.demo) return { updatedCells: 1 };
+  const parts = range.split('!');
+  const sheet = parts[0].replace(/'/g,'');
+  const r = await fetch(config.scriptUrl, {
+    method: 'POST',
+    body: JSON.stringify({ sheet, range: parts[1] || range, values })
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function carregarDados() {
+  const today = new Date();
+  const mes = today.getMonth();
+  const ano = today.getFullYear();
+  const aba = String(ano);
+  const cols = MES_COLS[mes];
+
+  try {
+    if (!config.demo) {
+      // Pegar saldo do último dia preenchido
+      const data = await sheetsGet(`${aba}!${cols[4]}3:${cols[4]}33`);
+      let lastSaldo = null;
+      if (data && data.values) {
+        for (let i = data.values.length - 1; i >= 0; i--) {
+          const v = parseFloat(String(data.values[i][0]).replace(',','.'));
+          if (!isNaN(v)) { lastSaldo = v; break; }
+        }
+      }
+      if (lastSaldo !== null) {
+        document.getElementById('saldo-value').textContent = `R$ ${lastSaldo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+        const cor = lastSaldo >= 2000 ? '#68d391' : lastSaldo >= 1000 ? '#f6e05e' : lastSaldo >= 0 ? '#fc8181' : '#fc4444';
+        document.getElementById('saldo-value').style.color = cor;
+      }
+      document.getElementById('saldo-label').textContent = `Saldo — ${MESES[mes]} ${ano}`;
+      document.getElementById('saldo-meta').textContent = `Atualizado da planilha`;
+    } else {
+      document.getElementById('saldo-value').textContent = 'R$ 1.842,50';
+      document.getElementById('saldo-label').textContent = `Saldo — ${MESES[mes]} ${ano}`;
+      document.getElementById('saldo-meta').textContent = 'Modo demo ativo';
+    }
+
+    // Lançamentos recentes (demo ou planilha)
+    carregarRecentes();
+  carregarEconomia();
+  } catch(e) {
+    document.getElementById('saldo-meta').textContent = 'Erro ao carregar: ' + e.message;
+  }
+}
+
+async function carregarRecentes() {
+  const list = document.getElementById('recent-list');
+  if (config.demo) {
+    list.innerHTML = `
+      <div class="entry"><div class="entry-info"><div class="entry-desc">Salário</div><div class="entry-meta">Entrada • Jan</div></div><div class="entry-val val-entrada">+R$ 3.499,53</div></div>
+      <div class="entry"><div class="entry-info"><div class="entry-desc">Fatura Nubank</div><div class="entry-meta">Saída • Jan</div></div><div class="entry-val val-saida">-R$ 516,00</div></div>
+      <div class="entry"><div class="entry-info"><div class="entry-desc">Mercado</div><div class="entry-meta">Diário • Jan</div></div><div class="entry-val val-diario">-R$ 55,00</div></div>
+    `;
+    return;
+  }
+
+  const today = new Date();
+  const mes = today.getMonth();
+  const aba = String(today.getFullYear());
+  const cols = MES_COLS[mes];
+
+  try {
+    const data = await sheetsGet(`${aba}!${cols[0]}3:${cols[3]}33`);
+    if (!data || !data.values) { list.innerHTML = '<p style="color:#a0aec0;font-size:14px;text-align:center;padding:16px">Sem dados ainda este mês</p>'; return; }
+    
+    let html = '';
+    data.values.forEach((row, i) => {
+      if (!row[0]) return;
+      const dia = row[0];
+      const entrada = parseFloat(row[1]) || 0;
+      const saida = parseFloat(row[2]) || 0;
+      const diario = parseFloat(row[3]) || 0;
+      if (entrada > 0) html += `<div class="entry"><div class="entry-info"><div class="entry-desc">Dia ${dia}</div><div class="entry-meta">Entrada • ${MESES[mes]}</div></div><div class="entry-val val-entrada">+R$ ${entrada.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>`;
+      if (saida > 0) html += `<div class="entry"><div class="entry-info"><div class="entry-desc">Dia ${dia}</div><div class="entry-meta">Saída • ${MESES[mes]}</div></div><div class="entry-val val-saida">-R$ ${saida.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>`;
+      if (diario > 0) html += `<div class="entry"><div class="entry-info"><div class="entry-desc">Dia ${dia}</div><div class="entry-meta">Diário • ${MESES[mes]}</div></div><div class="entry-val val-diario">-R$ ${diario.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>`;
+    });
+    list.innerHTML = html || '<p style="color:#a0aec0;font-size:14px;text-align:center;padding:16px">Sem lançamentos ainda</p>';
+  } catch(e) {
+    list.innerHTML = `<p style="color:#fc8181;font-size:13px;padding:16px">Erro: ${e.message}</p>`;
+  }
+}
+
+async function registrar() {
+  const dataVal = document.getElementById('f-data').value;
+  const valor = parseFloat(document.getElementById('f-valor').value);
+  const desc = document.getElementById('f-desc').value;
+  const mesIdx = parseInt(document.getElementById('f-mes').value);
+
+  if (!dataVal) { showToast('Informe a data', 'error'); return; }
+  if (!valor || valor <= 0) { showToast('Informe um valor válido', 'error'); return; }
+
+  const btn = document.getElementById('btn-registrar');
+  btn.disabled = true;
+  btn.textContent = 'Registrando...';
+
+  try {
+    const date = new Date(dataVal + 'T12:00:00');
+    const dia = date.getDate();
+    const ano = date.getFullYear();
+    const aba = String(ano);
+    const row = dia + 2; // linha = dia + 2 (cabeçalho em linha 2)
+
+    if (tipoAtual === 'nubank' || tipoAtual === 'sicred') {
+      // Lançar na aba Nubank ou Sicred
+      const abaCartao = tipoAtual === 'nubank' ? 'Nubank' : 'Sicred';
+      const cartaoCols = NUBANK_COLS[mesIdx];
+      // Encontrar próxima linha vazia na fatura do mês
+      const rangeCheck = await sheetsGet(`${abaCartao}!${cartaoCols[3]}3:${cartaoCols[3]}40`);
+      let nextRow = 6; // começa na linha 6 (após cabeçalhos)
+      if (rangeCheck && rangeCheck.values) nextRow = 6 + rangeCheck.values.filter(r => r[0] && r[0] != '0').length;
+      
+      await sheetsUpdate(`${abaCartao}!${cartaoCols[0]}${nextRow}:${cartaoCols[3]}${nextRow}`, [[dia, '', desc || '', valor]]);
+      showToast(`✅ Lançado no ${tipoAtual === 'nubank' ? 'Nubank' : 'Sicredi'}!`, 'success');
+    } else {
+      // Lançar na aba do ano
+      const cols = MES_COLS[mesIdx];
+      let colIdx = tipoAtual === 'entrada' ? 1 : tipoAtual === 'saida' ? 2 : 3; // B, C ou D
+      const col = cols[colIdx];
+
+      // Ler valor atual da célula para somar (não sobrescrever)
+      const existing = await sheetsGet(`${aba}!${col}${row}`);
+      let existingVal = 0;
+      if (existing && existing.values && existing.values[0]) {
+        existingVal = parseFloat(existing.values[0][0]) || 0;
+      }
+      const newVal = existingVal > 0 ? `=${existingVal}+${valor}` : valor;
+      await sheetsUpdate(`${aba}!${col}${row}`, [[newVal]]);
+      showToast(`✅ ${tipoAtual === 'entrada' ? 'Entrada' : tipoAtual === 'saida' ? 'Saída' : 'Diário'} registrado!`, 'success');
+    }
+
+    document.getElementById('f-valor').value = '';
+    document.getElementById('f-desc').value = '';
+    setTimeout(carregarDados, 1000);
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Registrar na Planilha';
+}
+
+
+// ======= ECONOMIA =======
+let ecoAno = '2025';
+const MESES_ECO = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+// D5:D16 = economia 2025, I5:I16 = economia 2026
+// C5:C16 = entradas 2025, H5:H16 = entradas 2026
+
+function setEcoAno(ano) {
+  ecoAno = ano;
+  document.querySelectorAll('.eco-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderEconomia();
+}
+
+async function carregarEconomia() {
+  await renderEconomia();
+}
+
+async function renderEconomia() {
+  const el = document.getElementById('eco-content');
+  if (config.demo) {
+    renderEcoTable([3885,0,0,0,0,0,0,0,0,0,0,0],[5200,4500,3800,0,0,0,0,0,0,0,0,0]);
+    return;
+  }
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> Carregando...</div>';
+  try {
+    const colEco = ecoAno === '2025' ? 'D' : 'I';
+    const colEnt = ecoAno === '2025' ? 'C' : 'H';
+    const [ecoData, entData] = await Promise.all([
+      sheetsGet('Economia!' + colEco + '5:' + colEco + '16'),
+      sheetsGet('Economia!' + colEnt + '5:' + colEnt + '16')
+    ]);
+    const ecos = (ecoData && ecoData.values) ? ecoData.values.map(r => parseFloat(r[0]) || 0) : Array(12).fill(0);
+    const ents = (entData && entData.values) ? entData.values.map(r => parseFloat(r[0]) || 0) : Array(12).fill(0);
+    renderEcoTable(ecos, ents);
+  } catch(e) {
+    el.innerHTML = '<p style="color:#fc8181;font-size:13px;padding:12px">Erro: ' + e.message + '</p>';
+  }
+}
+
+function renderEcoTable(ecos, ents) {
+  const el = document.getElementById('eco-content');
+  let totalEco = 0, totalEnt = 0;
+  let rows = '';
+  MESES_ECO.forEach((mes, i) => {
+    const ent = ents[i] || 0;
+    const eco = ecos[i] || 0;
+    totalEco += eco;
+    totalEnt += ent;
+    const pct = ent > 0 ? (eco / ent * 100) : 0;
+    const pctClass = pct >= 20 ? 'good' : pct >= 10 ? 'ok' : 'bad';
+    const pctStr = ent > 0 ? pct.toFixed(1) + '%' : '—';
+    rows += '<tr>' +
+      '<td>' + mes.charAt(0).toUpperCase() + mes.slice(1) + '</td>' +
+      '<td>R$ ' + ent.toLocaleString('pt-BR', {minimumFractionDigits:2}) + '</td>' +
+      '<td><input class="eco-input" type="number" step="0.01" min="0" data-mes="' + i + '" value="' + (eco > 0 ? eco : '') + '" placeholder="0,00" /></td>' +
+      '<td><span class="eco-pct ' + pctClass + '">' + pctStr + '</span></td>' +
+      '</tr>';
+  });
+  const pctTotal = totalEnt > 0 ? (totalEco / totalEnt * 100).toFixed(1) + '%' : '—';
+  rows += '<tr>' +
+    '<td>TOTAL</td>' +
+    '<td>R$ ' + totalEnt.toLocaleString('pt-BR', {minimumFractionDigits:2}) + '</td>' +
+    '<td>R$ ' + totalEco.toLocaleString('pt-BR', {minimumFractionDigits:2}) + '</td>' +
+    '<td><span class="eco-pct ' + (parseFloat(pctTotal) >= 20 ? 'good' : parseFloat(pctTotal) >= 10 ? 'ok' : 'bad') + '">' + pctTotal + '</span></td>' +
+    '</tr>';
+  el.innerHTML = '<table class="eco-table"><thead><tr><th>Mês</th><th>Entradas</th><th>Economia</th><th>%</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  // Update % live on input change
+  el.querySelectorAll('.eco-input').forEach(inp => {
+    inp.addEventListener('input', function() {
+      const tr = this.closest('tr');
+      const entCell = tr.cells[1].textContent.replace('R$ ','').replace(/\./g,'').replace(',','.');
+      const ent = parseFloat(entCell) || 0;
+      const eco = parseFloat(this.value) || 0;
+      const pct = ent > 0 ? (eco / ent * 100) : 0;
+      const pctClass = pct >= 20 ? 'good' : pct >= 10 ? 'ok' : 'bad';
+      tr.cells[3].innerHTML = '<span class="eco-pct ' + pctClass + '">' + (ent > 0 ? pct.toFixed(1) + '%' : '—') + '</span>';
+    });
+  });
+}
+
+async function salvarEconomia() {
+  const inputs = document.querySelectorAll('.eco-input');
+  const values = Array.from(inputs).map(i => [parseFloat(i.value) || 0]);
+  const btn = document.getElementById('btn-eco-save');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+  try {
+    const colEco = ecoAno === '2025' ? 'D' : 'I';
+    await sheetsUpdate('Economia!' + colEco + '5:' + colEco + '16', values);
+    showToast('✅ Economia salva para ' + ecoAno + '!', 'success');
+    await renderEconomia();
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+  btn.disabled = false;
+  btn.textContent = '💾 Salvar Economia na Planilha';
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+init();
+</script>
+</body>
+</html>
