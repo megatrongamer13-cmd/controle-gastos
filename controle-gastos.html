@@ -436,9 +436,12 @@ async function registrar() {
       const existing = await sheetsGet(`${aba}!${col}${row}`);
       let existingVal = 0;
       if (existing && existing.values && existing.values[0]) {
-        existingVal = parseFloat(existing.values[0][0]) || 0;
+        // Remove R$, dots, replace comma with dot for parsing
+        const raw = String(existing.values[0][0]).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim();
+        existingVal = parseFloat(raw) || 0;
       }
-      const newVal = existingVal > 0 ? `=${existingVal}+${valor}` : valor;
+      // Always sum as a number, never create nested formulas
+      const newVal = existingVal > 0 ? Math.round((existingVal + valor) * 100) / 100 : valor;
       await sheetsUpdate(`${aba}!${col}${row}`, [[newVal]]);
       showToast(`✅ ${tipoAtual === 'entrada' ? 'Entrada' : tipoAtual === 'saida' ? 'Saída' : 'Diário'} registrado!`, 'success');
     }
